@@ -1,0 +1,29 @@
+# 本插件包作为 profile 层的补丁：往组合里插入一行，装载本插件。
+#
+# 行的 `name` 解析的是**包名**：本包装进某个 profile 的 node_modules 之后，
+# 这一行就能解析到它，并取它的 `main`（`lib/index.js`）导出的 `apply` 作为
+# Cordis 插件（与本机既有的 plugin-oversize-recovery / dsh-plugin-browser 同构）。
+#
+# 它做一件事：注册一条 runtime-context 语句 `conduct:full-access`（order 125，
+# 紧随 sandbox:policy 110 / approval:policy 115 / subagent:delegation 120），
+# **仅当**会话的有效 sandbox 模式命中 `modes` 时渲染完全权限准则；否则渲染空串、
+# 不贡献任何内容。语句随策略快照注入：切进该模式即出现，切出即被新快照取代。
+#
+# `config` 是本插件唯一可调的东西（写错键名或类型会在装载时直接抛错，
+# 不会静默退回默认值）：
+#   * enabled  —— 总开关；false 表示完全不贡献（默认 true）
+#   * modes    —— 命中哪些模式才注入（默认 ['danger-full-access']）
+#   * content  —— 'digest'（约 1.6 KB 摘要，默认）| 'full'（整份准则文件）
+#   * file     —— content: full 时读取的文件（默认 D:\dsh\AGENTS.full-access.md）
+#   * maxBytes —— full 形式的字节上限（默认 16384）
+#   * lessonsEnabled   —— 是否注入「通用经验教训」语句 lessons:harness（默认 true，**与模式无关**）
+#   * lessonsFile      —— 教训文件路径（默认 D:\dsh\AGENTS.md）
+#   * lessonsMaxBytes  —— 教训语句的字节上限（默认 65536）
+
+- insert:
+    - id: mode-conduct
+      name: 'dsh-plugin-mode-conduct'
+      config:
+        enabled: true
+        content: digest
+        lessonsEnabled: true
